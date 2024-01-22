@@ -39,38 +39,34 @@ module.exports = {
       for (const roleToRemove of rolesToRemove){
         // const membersWithRole = roleToRemove.members.map((member) => member.user.tag);
         const membersWithRole = roleToRemove.members.map((member) => member.nickname || member.user.username) || [];
-        // console.log(`Members with role ${roleToRemove.name}: ${membersWithRole.join(', ')}`);
+        console.log(`Members with role ${roleToRemove.name}: ${membersWithRole.join(', ')}`);
         membersWithRoles[roleToRemove.name] = membersWithRole;
         // console.log(`${roleToRemove.name} gang: ${membersWithRoles[roleToRemove.name]}`);
 
-        if (roleToRemove.name === 'Shame'){
-          for (const member of roleToRemove.members.values()) {
-            await member.roles.remove(roleToRemove);
-            console.log(`Removed role "${roleToRemove.name}" from user ${member.user.tag}`);
-          }
+        for (const member of roleToRemove.members.values()) {
+          await member.roles.remove(roleToRemove);
+          console.log(`Removed role "${roleToRemove.name}" from user ${member.user.tag}`);
         }
       }
 
-      //Display users with roles
+      //Print final message
       const gloriousSnowList = membersWithRoles['Glorious Snow'].join('\n');
       const repentedList = membersWithRoles['Repented Shame'].join('\n');
       const shameList = membersWithRoles['Shame'].join('\n');
 
-      const gloriousSnowMessage = gloriousSnowList.length > 0 ? `\n**Glorious snow (Congrats to these peeps!):**\n${gloriousSnowList}` : '\nHuh? No one is in Glorious Snow?!? Judges must not be doing their jobs';
-      const repentedMessage = repentedList.length > 0 ? `\n**Repented Shame (Graduated from Shame gang!):**\n${repentedList}` : '\nNo one graduated from Shame gang :(';
-      const shameMessage = shameList.length > 0 ? `\n**Shame gang (See you next time Shame Dungeon!):**\n${shameList}` : '\nNo one is in Shame gang! Congrats Everyone!!! (Or maybe judges not doing their job)';
+      const gloriousSnowMessage = gloriousSnowList.length > 0 ? `\nGlorious snow (Congrats to these peeps!):\n${gloriousSnowList}` : '\nHuh? No one is in Glorious Snow?!? Judges must not be doing their jobs';
+      const repentedMessage = repentedList.length > 0 ? `\nRepented Shame (Graduated from Shame gang!):\n${repentedList}` : '\nNo one graduated from Shame gang :(';
+      const shameMessage = shameList.length > 0 ? `\nShame gang (See you next time Shame Dungeon!):\n${shameList}` : '\nNo one is in Shame gang! Congrats Everyone!!!';
       await interaction.editReply(`Time to unshame everyone!\n${gloriousSnowMessage}\n${repentedMessage}\n${shameMessage}`);
-
 
     } catch (error) {
       console.error('Error removing role:', error);
       await interaction.editReply("Oopsies looks like Yufine can't unshame everyone :(");
     }
-    
   },
 
-  name: 'unshame',
-  description: 'Removes Shame roles, and lists all users with shame glorious, ',
+  name: 'removerolls',
+  description: 'Removes the Glorious Snow and Shame roles',
   // deleted: true,
   // devOnly: Boolean,
   // testOnly: Boolean,

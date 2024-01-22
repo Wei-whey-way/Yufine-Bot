@@ -22,6 +22,11 @@ module.exports = (client) => {
             }
         });
     }
+    // client.user.setActivity({
+    //     name: "My adventure!",
+    //     type: ActivityType.Streaming,
+    //     url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley',
+    // });
 
     //Read messages from chat and respond when someone says Hi Yufine
     client.on('messageCreate', (message) => {
