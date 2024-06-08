@@ -10,12 +10,12 @@ module.exports = {
     //Check if user has required roles
     const member = interaction.guild.members.cache.get(interaction.user.id);
     const allowedRole = interaction.guild.roles.cache.find((role) => role.name === 'Mini-Balls');
-    
+
     if (!member || !member.roles.cache.has(allowedRole.id)) {
       await interaction.reply("Silly dookie, you can't unshame people");
       return;
     }
-
+  
     const roleName = ['Shame', 'Glorious Snow', 'Repented Shame'];
     await interaction.deferReply();
 
