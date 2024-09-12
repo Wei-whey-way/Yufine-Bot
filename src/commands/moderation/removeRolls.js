@@ -16,7 +16,8 @@ module.exports = {
       return;
     }
 
-    const roleName = ['Shame', 'Glorious Snow', 'Repented Shame'];
+    // const roleName = ['Shame', 'Glorious Snow', 'Repented Shame'];
+    const roleName = ['Igloo Guardian', 'Igloo Scouter'];
     await interaction.deferReply();
 
     //Array to store members with shame and glorious snow roles
@@ -66,7 +67,7 @@ module.exports = {
   },
 
   name: 'removerolls',
-  description: 'Removes the Glorious Snow and Shame roles',
+  description: 'Removes the Igloo Guardian and Scouter roles',
   // deleted: true,
   // devOnly: Boolean,
   // testOnly: Boolean,
