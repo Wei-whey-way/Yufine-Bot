@@ -1,10 +1,11 @@
 require('dotenv').config();
-const { Client, IntentsBitField, AttachmentBuilder, ActivityType} = require('discord.js');
+const { Client, GatewayIntentBits, IntentsBitField, AttachmentBuilder, ActivityType} = require('discord.js');
 const eventHandler = require('./handlers/eventHandler');
 
 const client = new Client({
     intents: [
         //A set of permissions that your bot can use in order to gain access to a set of events
+        GatewayIntentBits.Guilds,
         IntentsBitField.Flags.Guilds, 
         IntentsBitField.Flags.GuildMembers,
         IntentsBitField.Flags.GuildMessages,

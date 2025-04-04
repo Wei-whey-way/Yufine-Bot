@@ -1,7 +1,10 @@
 Bot program
 
-.gitignore file contains a list of directores git would not put in
-in config.json copy in all the userIDs that you want the slash command to work for
+Files not included but required:
+- .gitignore file contains a list of directores git would not put in
+- in config.json copy in all the userIDs that you want the slash command to work for
+- google.json contining google api keys
+- .env containing _____
 
 Note Guild means server
 
@@ -11,3 +14,6 @@ To install slash commands: node src/register-commands.js
 
 Look for the commands that are in yellow color with this () in the end. And can go to the disco
 development portal to find out the parameters (e.g. isChatInputCommand())
+
+Packages required
+- Google API (https://www.npmjs.com/package/googleapis)

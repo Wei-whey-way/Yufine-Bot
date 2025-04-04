@@ -1,4 +1,4 @@
-const { testServer } = require('../../../config.json');
+const { testServer, snowballServer } = require('../../../config.json');
 const areCommandsDifferent = require('../../utils/areCommandsDifferent');
 const getApplicationCommands = require('../../utils/getApplicationCommands');
 const getLocalCommands = require('../../utils/getLocalCommands');
@@ -6,9 +6,20 @@ const getLocalCommands = require('../../utils/getLocalCommands');
 module.exports = async (client) => {
     try {
         const localCommands = getLocalCommands();
-        const applicationCommands = await getApplicationCommands(client, testServer);
-        // console.log('Local commands:', localCommands);
+        const applicationCommands = await getApplicationCommands(client, snowballServer);
+        // const applicationCommands = await getApplicationCommands(client, devs);
+        // console.log('Local commands:', localCommands)
+        // console.log('Application commands:', applicationCommands.guild.commands)
         
+        //Deleting all old commands not used anymore. Manually delete commands must be done not in for loop
+        // applicationCommands.cache.forEach((value, key) => { 
+        //     // key is then your id or do value.id
+        //     console.log(value.id)
+        //     applicationCommands.delete(value.id)
+        //     console.log('Deleted')
+        // }) 
+        // console.log(';ha')
+
         for (const localCommand of localCommands){
             const {name, description, options} = localCommand;
 
@@ -16,12 +27,14 @@ module.exports = async (client) => {
                 (cmd) => cmd.name === name
             );
 
-            // console.log('Hello');
+            // console.log('Check command', name);
             if (existingCommand){
+                // console.log('This is an existing command:', localCommand);
+                
                 //To delete a command
                 if (localCommand.deleted){
                     await applicationCommands.delete(existingCommand.id);
-                    console.log(`Deleted command ${name}.`);
+                    // console.log(`Deleted command ${name}.`);
                     continue;
                 }
 
@@ -34,19 +47,19 @@ module.exports = async (client) => {
                     console.log(`Edited command ${name}.`);
                 }
             } else {
+                // console.log('This is not a local command:', localCommand);
+                
                 // console.log('Hello else statement');
                 if (localCommand.deleted) {
                     console.log(`Skipped registering command ${name} as it is set to delete`);
                     continue;
                 }
                 
-                // console.log('Hello else statement1', name, description, options);
                 //Run when command doesnt exist and is not set to be deleted
                 await applicationCommands.create({ name, description, options });
 
                 console.log(`Registered command ${name}`);
             }
-            // console.log('Hello end');
         }
     } catch (error){
         console.log(`01registerCommands, There was an error: ${error}`);
