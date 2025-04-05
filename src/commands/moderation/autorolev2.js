@@ -45,7 +45,7 @@ async function get_custom_roles(interaction){
     //     console.log('File written success!');
     //   }
     // });
-
+    // console.log(customRoles)
     return customRoles;
 
   } catch (error) {
@@ -115,7 +115,7 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
         //Check for custom roles
         const uniqueRole = custom_roles.find(role => role.name === item.name)
         if (uniqueRole){
-          role = uniqueRole.role[0];
+          role = uniqueRole.role;
         } else {
           role = "Glorious Penguin";
         }
@@ -145,7 +145,7 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
       //Find out what role the user has
       const targetUser = await interaction.guild.members.fetch(userID); //This gives member information
       var currentRole = 'None';
-      // console.log('aaaa')
+      
       for (const [old_role, role_id] of Object.entries(role_id_list)){ //For loop to iterate through penguin roles dictionary to get current role
         if (currentRole !== 'None'){continue;}
         const hasRole = targetUser.roles.cache.has(role_id)
@@ -157,22 +157,39 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
           
       //Checks if current role matches with new role
       const name = targetUser.nickname || targetUser.user.globalName || targetUser.user.username
+      
       // console.log('User current role:', currentRole, '. Check with new role:', role)
       if(currentRole === role){
         // console.log(`${name} retains ${currentRole}`)
         role_messsage.push(`${name}: ${role}`);
       } else{
         // console.log(`Need to change ${name}'s role`)
-        role_messsage.push(`${name}: ${role}. Previously ${currentRole}`);
+        if (role.length == 2){
+          role_messsage.push(`${name}: ${role[0]}. Previously ${currentRole}`);
+        } else {
+          role_messsage.push(`${name}: ${role}. Previously ${currentRole}`);
+        }
+        
 
         //Remove previous role from user
         if(currentRole !== "None"){
-          await targetUser.roles.remove(role_id_list[currentRole]);
+          if (role.length == 2){
+            await targetUser.roles.remove(role[1]);
+          } else {
+            await targetUser.roles.remove(role_id_list[currentRole]);
+          }
         }
+        // console.log('Removal success')
               
         //Add new role to user
+        // console.log('Adding role:', role, role.length)
         if(role !== "None"){
-          await targetUser.roles.add(role_id_list[role]);
+          if (role.length == 2){
+            await targetUser.roles.add(role[1]);
+          } else {
+            await targetUser.roles.add(role_id_list[role]);
+          }
+          
           // console.log(`Replaced ${currentRole} with ${role} for ${name}`)
         }
       }
@@ -197,12 +214,11 @@ module.exports = {
    * @param {Interaction} interaction
    */
   
-  
   callback: async (client, interaction) => {
     const guild = client.guilds.cache.get(snowballServer);
 
     await interaction.deferReply();
-    await interaction.editReply('Starting command...')
+    await interaction.editReply('Yufine is thinking...')
     
     // Check if user is in Mini-Balls
     const allowedRole = interaction.guild.roles.cache.find((role) => role.name === 'Mini-Balls');
