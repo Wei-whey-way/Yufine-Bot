@@ -56,7 +56,7 @@ module.exports = (client) => {
             message.channel.send(`Thank you ${displayName}!`);
         }
 
-        if (message.content.toLocaleLowerCase() === 'lord zhxu' || message.content.toLocaleLowerCase() === 'lorc zxhu'){
+        if (message.content.toLowerCase().includes('lord zhxu') || message.content.toLowerCase().includes('lord zxhu')){
             const img = new AttachmentBuilder('img/holysac.png', 'holysac.png');
             message.reply({ files: [img] });
         }
