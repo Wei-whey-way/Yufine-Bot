@@ -7,7 +7,7 @@ module.exports = {
 
     callback: (client, interaction) => {
         const images = [
-            '../../../img/fireflykissgif',
+            '../../../img/fireflykiss.gif',
             '../../../img/firefly-sam.gif'
         ];
         
