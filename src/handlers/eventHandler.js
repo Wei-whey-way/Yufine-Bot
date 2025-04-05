@@ -56,6 +56,11 @@ module.exports = (client) => {
             message.channel.send(`Thank you ${displayName}!`);
         }
 
+        if (message.content.toLocaleLowerCase() === 'lord zhxu' || message.content.toLocaleLowerCase() === 'lorc zxhu'){
+            const img = new AttachmentBuilder('img/holysac.png', 'holysac.png');
+            message.reply({ files: [img] });
+        }
+
         if (message.content.toLowerCase().includes('draw')){
             const num = getRandomNumber()
             let img;
