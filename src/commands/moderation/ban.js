@@ -53,6 +53,7 @@ module.exports = {
   // deleted: true,
   name: 'ban',
   description: 'Bans a member!!',
+  deleted: 'True',
   // devOnly: Boolean,
   // testOnly: Boolean,
   options: [

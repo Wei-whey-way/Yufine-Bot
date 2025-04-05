@@ -1,5 +1,43 @@
 const { Client, InteractionCollector, ApplicationCommandOptionType, PermissionFlagsBits, } = require('discord.js');
-  
+const { google } = require('googleapis');
+
+
+async function get_custom_roles(interaction){
+  //Read in google sheets
+  const sheets = google.sheets({version:'v4', auth});
+  const spreadsheetId = '1GZvD0G-7_uWH-YtKzayMr5kstodDDgatO645l_Df0Y4';
+  // const range = 'Current Season!A1:AN35';
+  const range = 'Custom Roles';
+  customRoles = []
+
+  try{
+    const response = await sheets.spreadsheets.values.get({
+        spreadsheetId, range 
+    });
+    const rows = response.data.values;
+    // console.log(rows)
+
+    //Get each user's records
+    var rowsLength = rows.length;
+    for (var i=2; i < rowsLength; i++){
+        // console.log(rows[i])
+
+        //Extract name and records
+        const name = rows[i][0]
+        let role = rows[i].slice(1);
+
+        // console.log('Pushing', name, records)
+        customRoles.push({name, role})
+    }
+    return customRoles;
+
+  } catch (error) {
+    console.error('Error reading custom roles:', error);
+    await interaction.editReply('Uhoh Alusha has potato coding.');
+    return;
+  }
+}
+
 module.exports = {
   /**
    * @param {Client} client
@@ -16,8 +54,7 @@ module.exports = {
       return;
     }
 
-    // const roleName = ['Shame', 'Glorious Snow', 'Repented Shame'];
-    const roleName = ['Igloo Guardian', 'Igloo Scouter'];
+    const roleName = ['Glorious Penguin', 'Fallen Shame'];
     await interaction.deferReply();
 
     //Array to store members with shame and glorious snow roles
@@ -51,14 +88,10 @@ module.exports = {
       }
 
       //Print final message
-      const gloriousSnowList = membersWithRoles['Glorious Snow'].join('\n');
-      const repentedList = membersWithRoles['Repented Shame'].join('\n');
-      const shameList = membersWithRoles['Shame'].join('\n');
-
-      const gloriousSnowMessage = gloriousSnowList.length > 0 ? `\nGlorious snow (Congrats to these peeps!):\n${gloriousSnowList}` : '\nHuh? No one is in Glorious Snow?!? Judges must not be doing their jobs';
-      const repentedMessage = repentedList.length > 0 ? `\nRepented Shame (Graduated from Shame gang!):\n${repentedList}` : '\nNo one graduated from Shame gang :(';
-      const shameMessage = shameList.length > 0 ? `\nShame gang (See you next time Shame Dungeon!):\n${shameList}` : '\nNo one is in Shame gang! Congrats Everyone!!!';
-      await interaction.editReply(`Time to unshame everyone!\n${gloriousSnowMessage}\n${repentedMessage}\n${shameMessage}`);
+      // const gloriousSnowMessage = gloriousSnowList.length > 0 ? `\nGlorious snow (Congrats to these peeps!):\n${gloriousSnowList}` : '\nHuh? No one is in Glorious Snow?!? Judges must not be doing their jobs';
+      // const repentedMessage = repentedList.length > 0 ? `\nRepented Shame (Graduated from Shame gang!):\n${repentedList}` : '\nNo one graduated from Shame gang :(';
+      // const shameMessage = shameList.length > 0 ? `\nShame gang (See you next time Shame Dungeon!):\n${shameList}` : '\nNo one is in Shame gang! Congrats Everyone!!!';
+      await interaction.editReply(`Time to unshame everyone!`);
 
     } catch (error) {
       console.error('Error removing role:', error);
@@ -67,7 +100,7 @@ module.exports = {
   },
 
   name: 'removerolls',
-  description: 'Removes the Igloo Guardian and Scouter roles',
+  description: 'Removes rolls',
   // deleted: true,
   // devOnly: Boolean,
   // testOnly: Boolean,
