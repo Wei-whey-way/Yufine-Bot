@@ -1,6 +1,8 @@
 const path = require('path');
 const { AttachmentBuilder, } = require('discord.js');
 const getAllFiles = require('../utils/getAllFiles');
+const { Venom, Alusha } = require('../../memberList.json');
+const { snowballServer, testServer } = require('../../config.json');
 
 // Function to generate a random number between 1 and 4
 function getRandomNumber() {
@@ -8,7 +10,34 @@ function getRandomNumber() {
     // We multiply it by 2 to get a number between 0 and 3.999...
     // Then we add 1 to make sure the result is between 1 and 4
     return Math.floor(Math.random() * 2) + 1;
-  }
+}
+
+// Timeoutvenom
+async function timeoutVenom(client, message) {
+    // console.log(client)
+    let guild = await client.guilds.cache.get(snowballServer);   
+    
+    console.log('Guild', guild)
+
+    const venom = await guild.members.cache.get(Venom);
+
+    if (venom) {
+        // console.log('Is venom')
+
+        try {
+            // console.log('Debug', venom)
+
+            await venom.timeout(900000, 'Very sussy behaviour');
+            await message.reply('Venom timed out for being too sussy');
+              
+        } catch (error) {
+            console.log(`Error when timing out: ${error}`)
+        }
+
+    } else {
+        console.error('User not found');
+    }
+}
 
 module.exports = (client) => {
     const eventFolders = getAllFiles(path.join(__dirname, '..', 'events'), true);
@@ -59,6 +88,19 @@ module.exports = (client) => {
         if (message.content.toLowerCase().includes('lord zhxu') || message.content.toLowerCase().includes('lord zxhu')){
             const img = new AttachmentBuilder('img/holysac.png', 'holysac.png');
             message.reply({ files: [img] });
+        }
+
+        if (/meta.*(sucks|hate)|((sucks|hate).*)meta/i.test(message.content)) {
+            message.reply('Meta this, meta that, have you ever met-a woman before?');
+        }
+        
+        if (
+            (/Moona.*preorder|preorder.*Moona/i.test(message.content) || /preorder\w*/i.test(message.content) && /Moona/i.test(message.content)) && /sus\w*/i.test(message.content)
+        ) {
+            if (message.author.id === Venom){
+                timeoutVenom(client, message);
+                console.log('Venom talking about Moona fig again')
+            } 
         }
 
         if (message.content.toLowerCase().includes('draw')){
