@@ -5,17 +5,17 @@ const { Venom, Alusha } = require('../../memberList.json');
 const { snowballServer, testServer } = require('../../config.json');
 
 // Function to generate a random number between 1 and 4
-function getRandomNumber() {
-    // Math.random() generates a random decimal between 0 and 1 (exclusive of 1)
-    // We multiply it by 2 to get a number between 0 and 3.999...
-    // Then we add 1 to make sure the result is between 1 and 4
-    return Math.floor(Math.random() * 2) + 1;
-}
+// function getRandomNumber() {
+//     // Math.random() generates a random decimal between 0 and 1 (exclusive of 1)
+//     // We multiply it by 2 to get a number between 0 and 3.999...
+//     // Then we add 1 to make sure the result is between 1 and 4
+//     return Math.floor(Math.random() * 2) + 1;
+// }
 
 // Timeoutvenom
 async function timeoutVenom(client, message) {
     // console.log(client)
-    let guild = await client.guilds.cache.get(snowballServer);   
+    let guild = await client.guilds.cache.get(testServer);   
     
     console.log('Guild', guild)
 
@@ -27,7 +27,9 @@ async function timeoutVenom(client, message) {
         try {
             // console.log('Debug', venom)
 
-            await venom.timeout(900000, 'Very sussy behaviour');
+            // await venom.timeout(900000, 'Very sussy behaviour');
+            await venom.timeout(50000, 'Very sussy behaviour');
+            
             await message.reply('Venom timed out for being too sussy');
               
         } catch (error) {
@@ -94,13 +96,24 @@ module.exports = (client) => {
             message.reply('Meta this, meta that, have you ever met-a woman before?');
         }
         
-        if (
-            (/Moona.*preorder|preorder.*Moona/i.test(message.content) || /preorder\w*/i.test(message.content) && /Moona/i.test(message.content)) && /sus\w*/i.test(message.content)
-        ) {
+        // const content = message.content.toLowerCase();
+        hasMoona = message.content.toLowerCase().match(/\bmoona\b/)
+        hasPreorder = message.content.toLowerCase().match(/\bpreorder\w*\b/)
+        hasFig = message.content.toLowerCase().match(/\bfig\w*\b/)
+        hasSus = message.content.toLowerCase().match(/\bsus\b/)
+
+        if ((hasMoona && hasPreorder) || (hasMoona && hasFig)) {
             if (message.author.id === Venom){
                 timeoutVenom(client, message);
-                console.log('Venom talking about Moona fig again')
-            } 
+                // console.log('Venom talking about Moona fig again')
+            } else {
+                message.reply("Big sis got a figurine?!");
+            }
+        }
+
+        if (hasSus && message.author.id === Venom){
+            timeoutVenom(client, message);
+            // message.reply("Stop being sussy Alusha, you are not Venom!");
         }
 
         if (message.content.toLowerCase().includes('draw')){

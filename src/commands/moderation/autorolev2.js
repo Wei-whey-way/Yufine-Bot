@@ -33,7 +33,7 @@ async function get_custom_roles(interaction){
         const name = rows[i][0]
         let role = rows[i].slice(1);
 
-        // console.log('Pushing', name, records)
+        // console.log('(get_custom_roles) Pushing', name, role)
         customRoles.push({name, role})
     }
 
@@ -45,7 +45,7 @@ async function get_custom_roles(interaction){
     //     console.log('File written success!');
     //   }
     // });
-    // console.log(customRoles)
+
     return customRoles;
 
   } catch (error) {
@@ -110,12 +110,12 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
       
       let role = "None";
 
-      recentRecords = item.records
+      recentRecords = item.records.reverse();
       if (recentRecords[0] == "Win"){ //Give win roles
         //Check for custom roles
         const uniqueRole = custom_roles.find(role => role.name === item.name)
         if (uniqueRole){
-          role = uniqueRole.role;
+          role = uniqueRole.role[0];
         } else {
           role = "Glorious Penguin";
         }
@@ -145,7 +145,7 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
       //Find out what role the user has
       const targetUser = await interaction.guild.members.fetch(userID); //This gives member information
       var currentRole = 'None';
-      
+      // console.log('aaaa')
       for (const [old_role, role_id] of Object.entries(role_id_list)){ //For loop to iterate through penguin roles dictionary to get current role
         if (currentRole !== 'None'){continue;}
         const hasRole = targetUser.roles.cache.has(role_id)
@@ -157,37 +157,45 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
           
       //Checks if current role matches with new role
       const name = targetUser.nickname || targetUser.user.globalName || targetUser.user.username
-      
       // console.log('User current role:', currentRole, '. Check with new role:', role)
+      
+      let isUniqueRole = false;
+      let uniqueRoleId = null;
+      if ((role == "None") || (role == "Glorious Penguin") || (role == "Fallen Shame")) {
+        // console.log("Non unique role")
+        isUniqueRole = false;
+      } else{
+        let uniqueRole = role
+        uniqueRole = custom_roles.find(role => role.role[0] === uniqueRole)
+        uniqueRoleId = uniqueRole.role[1];
+        // console.log("Unique role has id", uniqueRoleId)
+        isUniqueRole = true;
+        
+      }
+
       if(currentRole === role){
         // console.log(`${name} retains ${currentRole}`)
         role_messsage.push(`${name}: ${role}`);
       } else{
         // console.log(`Need to change ${name}'s role`)
-        if (role.length == 2){
-          role_messsage.push(`${name}: ${role[0]}. Previously ${currentRole}`);
-        } else {
-          role_messsage.push(`${name}: ${role}. Previously ${currentRole}`);
-        }
-        
+        role_messsage.push(`${name}: ${role}. Previously ${currentRole}`);
 
         //Remove previous role from user
         if(currentRole !== "None"){
-          if (role.length == 2){
-            await targetUser.roles.remove(role[1]);
-          } else {
+          if (isUniqueRole === false) {
             await targetUser.roles.remove(role_id_list[currentRole]);
-          }
+          } else {
+            await targetUser.roles.remove(uniqueRoleId);
+          } 
         }
-        // console.log('Removal success')
               
         //Add new role to user
-        // console.log('Adding role:', role, role.length)
         if(role !== "None"){
-          if (role.length == 2){
-            await targetUser.roles.add(role[1]);
-          } else {
+          if (isUniqueRole === false) {
             await targetUser.roles.add(role_id_list[role]);
+          } else {
+            await targetUser.roles.add(uniqueRoleId);
+            await targetUser.roles.add(role_id_list["Glorious Penguin"]);
           }
           
           // console.log(`Replaced ${currentRole} with ${role} for ${name}`)
@@ -214,11 +222,12 @@ module.exports = {
    * @param {Interaction} interaction
    */
   
+  
   callback: async (client, interaction) => {
     const guild = client.guilds.cache.get(snowballServer);
 
     await interaction.deferReply();
-    await interaction.editReply('Yufine is thinking...')
+    await interaction.editReply('Starting command...')
     
     // Check if user is in Mini-Balls
     const allowedRole = interaction.guild.roles.cache.find((role) => role.name === 'Mini-Balls');
@@ -241,17 +250,17 @@ module.exports = {
     role_id_list = {
       // "Legend's Attic": '725310473620160522',
       'Glorious Penguin': '1161522138344325120',
-      'Fallen Shame': '1268365962231546007',
-      'Monkey King': '1263175766691020883',
-      "Kizuna-ai Less": '1308438582805004298',
-      "Lua Enjoyer": '1309599756414222378',
-      'Bonkas': '1311635084637638697',
-      "Best Boi": '1275879340936269896',
-      "Garnet": '1278530312753774653',
-      "Mellona Lover": '1310906368466747392',
-      "Snowbol's Supreme": '1278622292691259495',
-      "Pumpkin": '1273017049769316503',
-      "Zen": '1278182217549480022'
+      'Fallen Shame': '1268365962231546007'
+      // 'Monkey King': '1263175766691020883',
+      // "Kizuna-ai Less": '1308438582805004298',
+      // "Lua Enjoyer": '1309599756414222378',
+      // 'Bonkas': '1311635084637638697',
+      // "Best Boi": '1275879340936269896',
+      // "Garnet": '1278530312753774653',
+      // "Mellona Lover": '1310906368466747392',
+      // "Snowbol's Supreme": '1278622292691259495',
+      // "Pumpkin": '1273017049769316503',
+      // "Zen": '1278182217549480022'
     }
 
     role_messsage = []
