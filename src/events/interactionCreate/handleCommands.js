@@ -10,7 +10,7 @@ module.exports = async (client, interaction) => {
         const commandObject = localCommands.find(
             (cmd) => cmd.name === interaction.commandName
         );
-        console.log(`handleCommands.js, commandObject: ${commandObject}`);
+        // console.log(`handleCommands.js, commandObject: ${commandObject}`);
 
         if (!commandObject) return;
 

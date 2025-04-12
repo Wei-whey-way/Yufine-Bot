@@ -4,18 +4,24 @@ const getAllFiles = require('../utils/getAllFiles');
 const { Venom, Alusha } = require('../../memberList.json');
 const { snowballServer, testServer } = require('../../config.json');
 
+let venomChat = new Array(5).fill("");
+let venomChatIndex = 0;
+
 // Function to generate a random number between 1 and 4
-// function getRandomNumber() {
-//     // Math.random() generates a random decimal between 0 and 1 (exclusive of 1)
-//     // We multiply it by 2 to get a number between 0 and 3.999...
-//     // Then we add 1 to make sure the result is between 1 and 4
-//     return Math.floor(Math.random() * 2) + 1;
-// }
+function randomTimeout() {
+    // Math.random() generates a random decimal between 0 and 1 (exclusive of 1)
+    // We multiply it by 2 to get a number between 0 and 3.999...
+    // Then we add 1 to make sure the result is between 1 and 4
+    let durationMin = Math.floor((Math.random() * 60) + 5);
+    let durationMs = durationMin * 60 * 1000; // Convert minutes to milliseconds
+    
+    return durationMs;
+}
 
 // Timeoutvenom
 async function timeoutVenom(client, message) {
     // console.log(client)
-    let guild = await client.guilds.cache.get(testServer);   
+    let guild = await client.guilds.cache.get(snowballServer);   
     
     console.log('Guild', guild)
 
@@ -27,8 +33,8 @@ async function timeoutVenom(client, message) {
         try {
             // console.log('Debug', venom)
 
-            // await venom.timeout(900000, 'Very sussy behaviour');
-            await venom.timeout(50000, 'Very sussy behaviour');
+            await venom.timeout(randomTimeout(), 'Very sussy behaviour');
+            // await venom.timeout(50000, 'Very sussy behaviour');
             
             await message.reply('Venom timed out for being too sussy');
               
@@ -100,13 +106,16 @@ module.exports = (client) => {
         hasMoona = message.content.toLowerCase().match(/\bmoona\b/)
         hasPreorder = message.content.toLowerCase().match(/\bpreorder\w*\b/)
         hasFig = message.content.toLowerCase().match(/\bfig\w*\b/)
-        hasSus = message.content.toLowerCase().match(/\bsus\b/)
+        hasSus = message.content.toLowerCase().match(/\bsus\w*\b/)
 
         if ((hasMoona && hasPreorder) || (hasMoona && hasFig)) {
+            console.log('Moona fig talk by', message.author)
             if (message.author.id === Venom){
+                console.log('Venom talking about Moona fig again')
                 timeoutVenom(client, message);
-                // console.log('Venom talking about Moona fig again')
+                
             } else {
+                console.log('Venom talking about Moona fig again')
                 message.reply("Big sis got a figurine?!");
             }
         }
@@ -116,8 +125,30 @@ module.exports = (client) => {
             // message.reply("Stop being sussy Alusha, you are not Venom!");
         }
 
+        if (message.author.id === Venom){
+            // console.log('Venom message')
+            // console.log(message.content);
+
+            //Check if venom repeated the same text 3 times
+            let count = 0
+            for (let i = 0; i < venomChat.length; i++){
+                if (venomChat[i] === message.content){
+                    count++;
+                }
+            }
+
+            if ((count >= 2) || (venomChat.includes("moona") && (venomChat.includes("fig") || venomChat.includes("preorder")))){
+                console.log('Venom repeated the same text 3 times')
+                timeoutVenom(client, message);
+            }
+            venomChat[venomChatIndex%5] = message.content.toLowerCase();
+            venomChatIndex++;
+
+            console.log('Venom messages:', venomChat);
+        }
+
         if (message.content.toLowerCase().includes('draw')){
-            const num = getRandomNumber()
+            const num = Math.floor(Math.random() * 2) + 1;
             let img;
             if (num == 1){
                 img = new AttachmentBuilder('img/NegaDraw.png', 'NegaDraw.png');
