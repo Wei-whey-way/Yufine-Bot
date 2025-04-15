@@ -15,7 +15,7 @@ module.exports = (exceptions = []) => {
 
         for (const commandFile of commandFiles){
             const commandObject = require(commandFile);
-            // console.log(commandObject);
+            // console.log('Get local commands:', commandObject);
 
             if(exceptions.includes(commandObject.name)){
                 continue;
