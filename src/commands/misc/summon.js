@@ -24,7 +24,6 @@ async function get_heroes(){
     const rows = response.data.values;
     // console.log(rows)
 
-    //Get each user's records
     var rowsLength = rows.length;
     for (var i=1; i < rowsLength; i++){
         // console.log(rows[i], rows[i].length)
@@ -77,19 +76,70 @@ async function get_heroes(){
   }
 }
 
+async function get_arti(){
+  //Read in google sheets
+  const sheets = google.sheets({version:'v4', auth});
+  const spreadsheetId = '1YuoDQO8hzz44Bo7Dva2wTUKPlvZhfeATU0m2RA6hY_M';
+  const range = 'Artifact Library';
+  let artifacts = []
+
+  try{
+    const response = await sheets.spreadsheets.values.get({
+        spreadsheetId, range 
+    });
+    const rows = response.data.values;
+    // console.log(rows)
+
+    var rowsLength = rows.length;
+    for (var i=1; i < rowsLength; i++){
+        // console.log(rows[i], rows[i].length)
+
+        //Extract name, and rarity
+        const name = rows[i][0];
+        const rarity = rows[i][1];
+        let limited = false;
+        let availability = true;
+
+        if (rows[i].length == 3){
+          switch(rows[i][2]){
+            case 'Unavailable':
+              availability = false;
+              break;
+            case 'Yes':
+              limited = true;
+              break;
+          }
+        }
+        
+        if (availability === true){
+          artifacts.push([name, rarity, limited]);
+        }
+    }
+
+    return { artifacts };
+
+  } catch (error) {
+    console.error('Error reading hero library', error);
+    await interaction.editReply('Uhoh Alusha has potato coding.');
+    return;
+  }
+}
+
 async function heroRarity(unit_pool){
   const hero = unit_pool[Math.floor(Math.random() * unit_pool.length)];
-
   return hero;
 }
 
-async function summonConvenant(fire, ice, earth, light, dark) {
+async function summonConvenant(fire, ice, earth, light, dark, artifacts) {
   //Create rgb and ml pull and remove limited heroes
   let combined_rgb = fire.concat(ice, earth);
   let combined_ml = light.concat(dark);
   combined_rgb = combined_rgb.filter(item => item[2] === false);
   combined_ml = combined_ml.filter(item => item[2] === false);
+  
+  artifacts = artifacts.filter(item => item[2] === false);
 
+  //Clean up hero and library list
   const heroes_rgb = combined_rgb.reduce((acc, [name, rarity, _]) => {
     if (!acc[rarity]) {
       acc[rarity] = [];
@@ -106,9 +156,14 @@ async function summonConvenant(fire, ice, earth, light, dark) {
     return acc;
   }, {});
 
-  // console.log(heroes_ml)
+  artifacts = artifacts.reduce((acc, [name, rarity, _]) => {
+    if (!acc[rarity]) {
+      acc[rarity] = [];
+    }
+    acc[rarity].push(name);
+    return acc;
+  }, {});
 
-  // console.log(fire_nonlimited)
   let rng = Math.random() * 100;
   
   if (rng < 51.75) {
@@ -117,33 +172,34 @@ async function summonConvenant(fire, ice, earth, light, dark) {
 
     if (heroRng < 0.15) { //ML5
       // console.log(heroes_ml['5'])
-      return heroRarity(heroes_ml['5']);
+      return await heroRarity(heroes_ml['5']) + " (★★★★★)";
     } else if (heroRng < 0.15 + 0.5) { //ML4
       // console.log(heroes_ml['4'])
-      return heroRarity(heroes_ml['4']);
+      return await heroRarity(heroes_ml['4']) + " (★★★★)";
     } else if (heroRng < 0.15 + 0.5 + 4.35) { //ML3
       // console.log(heroes_ml['3'])
-      return heroRarity(heroes_ml['3']);
+      return await heroRarity(heroes_ml['3']) + " (★★★)";
     } else if (heroRng < 0.15 + 0.5 + 4.35 + 1.25) { //5 star
       // console.log(heroes_rgb['5'])
-      return heroRarity(heroes_rgb['5']);
+      return await heroRarity(heroes_rgb['5']) + " (★★★★★)";
     } else if (heroRng < 0.15 + 0.5 + 4.35 + 1.25 + 4.5) { //4 star
       // console.log(heroes_rgb['4'])
-      return heroRarity(heroes_rgb['4']);
+      return await heroRarity(heroes_rgb['4']) + " (★★★★)";
     } else { //3 star
       // console.log(heroes_rgb['3'])
-      return heroRarity(heroes_rgb['3']);
+      return await heroRarity(heroes_rgb['3']) + " (★★★)";
     }
 
   } else {
     // Summon Artifact
     let artifactRng = Math.random() * 100;
 
-    if (artifactRng < 1.75) {
-      return "Artifact ★★★★★ (not implemented yet)";
-    } else if (artifactRng < 1.75 + 6.5) {
-      return "Artifact ★★★★ (not implemented yet)";
-    } else {
+    if (artifactRng < 1.75) { //5 star
+      return await heroRarity(artifacts['5']) + " (★★★★★)";
+    } else if (artifactRng < 1.75 + 6.5) { //4 star
+      return await heroRarity(artifacts['4']) + " (★★★★)";
+    } else { //3
+      return await heroRarity(artifacts['3']) + " (★★★)";
       return "Artifact ★★★ (not implemented yet)";
     }
   }
@@ -166,11 +222,11 @@ async function summonML(light, dark) {
   // Summon Hero
   let heroRng = Math.random() * 100;
   if (heroRng < 2.5) { //ML5
-    return heroRarity(heroes_ml['5']);
+    return await heroRarity(heroes_ml['5'])  + " (★★★★★)";
   } else if (heroRng < 2.5 + 27.5) { //ML4
-    return heroRarity(heroes_ml['4']);
+    return await heroRarity(heroes_ml['4'])  + " (★★★★)";
   } else { //ML3
-    return heroRarity(heroes_ml['3']);
+    return await heroRarity(heroes_ml['3'])  + " (★★★)";
   }
 }
 
@@ -243,22 +299,24 @@ module.exports = {
         let result = ""
 
         const { fire, ice, earth, light, dark } = await get_heroes();
+        const { artifacts } = await get_arti();
         
+        // console.log('After pulling sheet', arti_three)
         // console.log(summon_type, num_pulls)
 
         switch(summon_type){
           case 'Covenant':
             switch(num_pulls){
               case 'Single':
-                result = await summonConvenant(fire, ice, earth, light, dark);
+                result = await summonConvenant(fire, ice, earth, light, dark, artifacts);
                 await interaction.editReply(result);
                 break;
                 
               case 'Multi':
-                result = await summonConvenant(fire, ice, earth, light, dark);
+                result = await summonConvenant(fire, ice, earth, light, dark, artifacts);
                 
                 for (let i=0; i<9; i++){
-                  result = result + "\n" + await summonConvenant(fire, ice, earth, light, dark);
+                  result = result + "\n" + await summonConvenant(fire, ice, earth, light, dark, artifacts);
                 }
     
                 await interaction.editReply(result);

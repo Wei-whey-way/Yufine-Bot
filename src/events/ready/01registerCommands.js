@@ -1,4 +1,4 @@
-const { testServer, snowballServer, impServer } = require('../../../config.json');
+const { testServer, snowballServer, impServer, sufferServer, tmServer } = require('../../../config.json');
 const areCommandsDifferent = require('../../utils/areCommandsDifferent');
 const getApplicationCommands = require('../../utils/getApplicationCommands');
 const getLocalCommands = require('../../utils/getLocalCommands');
@@ -6,7 +6,7 @@ const getLocalCommands = require('../../utils/getLocalCommands');
 module.exports = async (client) => {
     try {
         const localCommands = getLocalCommands();
-        const applicationCommands = await getApplicationCommands(client, testServer);
+        const applicationCommands = await getApplicationCommands(client, tmServer);
         
         //Deleting all old commands not used anymore. Manually delete commands must be done not in for loop
         // applicationCommands.cache.forEach((value, key) => { 
@@ -26,7 +26,7 @@ module.exports = async (client) => {
 
             // console.log('Check command', name);
             if (existingCommand){
-                console.log('This is an existing command:', localCommand);
+                // console.log('This is an existing command:', localCommand);
                 
                 //To delete a command
                 if (localCommand.deleted){

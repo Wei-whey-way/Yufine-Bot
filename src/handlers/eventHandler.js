@@ -7,7 +7,6 @@ const { snowballServer, testServer } = require('../../config.json');
 let venomChat = new Array(5).fill("");
 let venomChatIndex = 0;
 
-// Function to generate a random number between 1 and 4
 function randomTimeout() {
     // Math.random() generates a random decimal between 0 and 1 (exclusive of 1)
     // We multiply it by 2 to get a number between 0 and 3.999...
