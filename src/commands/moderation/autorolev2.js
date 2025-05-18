@@ -9,13 +9,14 @@ const auth = new google.auth.GoogleAuth({
     scopes:['https://www.googleapis.com/auth/spreadsheets']
 })
 
-async function get_custom_roles(interaction){
+async function get_id(interaction){
   //Read in google sheets
   const sheets = google.sheets({version:'v4', auth});
   const spreadsheetId = '1GZvD0G-7_uWH-YtKzayMr5kstodDDgatO645l_Df0Y4';
-  // const range = 'Current Season!A1:AN35';
-  const range = 'Custom Roles';
-  customRoles = []
+  const range = 'Users';
+
+  let userIds = {}
+  let customRoles = []
 
   try{
     const response = await sheets.spreadsheets.values.get({
@@ -29,24 +30,20 @@ async function get_custom_roles(interaction){
     for (var i=2; i < rowsLength; i++){
         // console.log(rows[i])
 
-        //Extract name and records
+        //Extract name and discord id
         const name = rows[i][0]
-        let role = rows[i].slice(1);
+        let id = rows[i][1];
+        userIds[name] = id;
 
-        // console.log('(get_custom_roles) Pushing', name, role)
-        customRoles.push({name, role})
+        //Check for custom roles
+        if (rows[i].length > 2){
+          const role = rows[i].slice(2,4);
+          customRoles.push({name, role});
+        }
     }
 
-    // //Save a copy of customroles for removerolls Doesnt work because creating file resets server
-    // fs.writeFile('./customRoles.json', JSON.stringify(customRoles), err => {
-    //   if(err){
-    //     console.error('Failure to save customrole file', err);
-    //   } else {
-    //     console.log('File written success!');
-    //   }
-    // });
-
-    return customRoles;
+    // console.log('CHECKING FUNCTION\nUser IDs', userIds, '\nCustom Roles', customRoles)
+    return [ userIds, customRoles ];
 
   } catch (error) {
     console.error('Error reading custom roles:', error);
@@ -54,6 +51,53 @@ async function get_custom_roles(interaction){
     return;
   }
 }
+
+// async function get_custom_roles(interaction){
+//   //Read in google sheets
+//   const sheets = google.sheets({version:'v4', auth});
+//   const spreadsheetId = '1GZvD0G-7_uWH-YtKzayMr5kstodDDgatO645l_Df0Y4';
+//   // const range = 'Current Season!A1:AN35';
+//   const range = 'Custom Roles';
+//   customRoles = []
+
+//   try{
+//     const response = await sheets.spreadsheets.values.get({
+//         spreadsheetId, range 
+//     });
+//     const rows = response.data.values;
+//     // console.log(rows)
+
+//     //Get each user's records
+//     var rowsLength = rows.length;
+//     for (var i=2; i < rowsLength; i++){
+//         // console.log(rows[i])
+
+//         //Extract name and records
+//         const name = rows[i][0]
+//         let role = rows[i].slice(1);
+
+//         // console.log('(get_custom_roles) Pushing', name, role)
+//         customRoles.push({name, role})
+//     }
+
+//     // //Save a copy of customroles for removerolls Doesnt work because creating file resets server
+//     // fs.writeFile('./customRoles.json', JSON.stringify(customRoles), err => {
+//     //   if(err){
+//     //     console.error('Failure to save customrole file', err);
+//     //   } else {
+//     //     console.log('File written success!');
+//     //   }
+//     // });
+
+//     return customRoles;
+
+//   } catch (error) {
+//     console.error('Error reading custom roles:', error);
+//     await interaction.editReply('Uhoh Alusha has potato coding.');
+//     return;
+//   }
+// }
+
 
 async function read_gsheets(interaction, member_list, custom_roles, role_id_list){
   //Read in google sheets
@@ -67,7 +111,7 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
         spreadsheetId, range 
     });
     const rows = response.data.values;
-    // console.log(rows)
+    // console.log('Readgsheets rows', rows)
 
     //Get each user's records
     var rowsLength = rows.length;
@@ -90,13 +134,13 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
         history.push({name, records})
     }
 
-    // console.log(history)
+    // console.log('Readgsheets: history', history)
 
   } catch(error){
       console.error('error', error)
       return;
   }
-  // console.log('Custom roles', custom_roles)
+  console.log('Readgsheets: Custom roles', custom_roles)
 
   //Role checker
   userRole = {}
@@ -114,12 +158,15 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
       if (recentRecords[0] == "Win"){ //Give win roles
         //Check for custom roles
         const uniqueRole = custom_roles.find(role => role.name === item.name)
+
+        // console.log('Readgsheets: Checking for unique role', uniqueRole, 'for', item.name)
         if (uniqueRole){
           role = uniqueRole.role[0];
+          // role = uniqueRole['uniqueRole'][0];
         } else {
           role = "Glorious Penguin";
         }
-        // console.log(`Role for ${item.name} is ${role}`)
+        // console.log(`\tReadgsheets: Role for ${item.name} is ${role}`)
         
       } else if (recentRecords[0] == "Int"){
         role = "Fallen Shame"
@@ -150,7 +197,7 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
         if (currentRole !== 'None'){continue;}
         const hasRole = targetUser.roles.cache.has(role_id)
         if (hasRole) {
-          // console.log('\tHasrole: ', hasRole, old_role)
+          console.log(targetUser, '\tHasrole: ', hasRole, old_role)
           currentRole = old_role;
         }
       }
@@ -182,9 +229,13 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
 
         //Remove previous role from user
         if(currentRole !== "None"){
-          if (isUniqueRole === false) {
-            await targetUser.roles.remove(role_id_list[currentRole]);
-          } else {
+          // if (isUniqueRole === false) {
+          //   await targetUser.roles.remove(role_id_list[currentRole]);
+          // } else {
+          //   await targetUser.roles.remove(uniqueRoleId);
+          // } 
+          await targetUser.roles.remove(role_id_list[currentRole]);
+          if (isUniqueRole === true) {
             await targetUser.roles.remove(uniqueRoleId);
           } 
         }
@@ -239,13 +290,15 @@ module.exports = {
     }
 
     //Get custom roles from google sheets
-    var custom_roles = await get_custom_roles(interaction); //Await to ensure it finishes
-    // console.log(custom_roles)
+    // var custom_roles = await get_custom_roles(interaction); //Await to ensure it finishes
+    const [ member_list, custom_roles ] = await get_id(interaction);
+    // console.log('User ids', member_list, '\nCustom roles', custom_roles)
 
     //Get member list
     // const memberList = JSON.parse(fs.readFileSync('./member_list.json', 'utf-8'));
-    const jsonString = fs.readFileSync('./memberList.json', 'utf-8');
-    const member_list = JSON.parse(jsonString);
+    // const jsonString = fs.readFileSync('./memberList.json', 'utf-8');
+    // const member_list = JSON.parse(jsonString);
+    // console.log('Member list', member_list)
 
     role_id_list = {
       // "Legend's Attic": '725310473620160522',

@@ -22,7 +22,7 @@ async function timeoutVenom(client, message) {
     // console.log(client)
     let guild = await client.guilds.cache.get(snowballServer);   
     
-    console.log('Guild', guild)
+    // console.log('Guild', guild)
 
     const venom = await guild.members.cache.get(Venom);
 
@@ -104,7 +104,7 @@ module.exports = (client) => {
         // const content = message.content.toLowerCase();
         hasMoona = message.content.toLowerCase().match(/\bmoona\b/)
         hasPreorder = message.content.toLowerCase().match(/\bpreorder\w*\b/)
-        hasFig = message.content.toLowerCase().match(/\bfig\w*\b/)
+        hasFig = message.content.toLowerCase().match(/\bfig*\b/)
         hasSus = message.content.toLowerCase().match(/\bsus\w*\b/)
 
         if ((hasMoona && hasPreorder) || (hasMoona && hasFig)) {
@@ -143,10 +143,10 @@ module.exports = (client) => {
             venomChat[venomChatIndex%5] = message.content.toLowerCase();
             venomChatIndex++;
 
-            console.log('Venom messages:', venomChat);
+            // console.log('Venom messages:', venomChat);
         }
 
-        if (message.content.toLowerCase().includes('draw')){
+        if (message.content.toLocaleLowerCase() === 'draw'){
             const num = Math.floor(Math.random() * 2) + 1;
             let img;
             if (num == 1){
@@ -160,7 +160,7 @@ module.exports = (client) => {
             }
         };
 
-        if (message.content.toLowerCase().includes('arbiter vildred') || message.content.toLowerCase().includes('arbi') || message.content.toLowerCase().includes('arby') || message.content.toLocaleLowerCase() === 'pumpkin weakness' ){
+        if (message.content.toLowerCase().includes('arbiter vildred') || message.content.toLocaleLowerCase() === 'pumpkin weakness' ){
             const img = new AttachmentBuilder('img/pumpkinweakness.png', 'pumpkinweakness.png');
             channel.send({ files: [img] });
         };
