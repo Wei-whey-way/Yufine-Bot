@@ -105,7 +105,7 @@ module.exports = (client) => {
         hasMoona = message.content.toLowerCase().match(/\bmoona\b/)
         hasPreorder = message.content.toLowerCase().match(/\bpreorder\w*\b/)
         hasFig = message.content.toLowerCase().match(/\bfig*\b/)
-        hasSus = message.content.toLowerCase().match(/\bsus\w*\b/)
+        hasSus = message.content.toLowerCase().match(/\b\w*sus\w*\b/)
 
         if ((hasMoona && hasPreorder) || (hasMoona && hasFig)) {
             console.log('Moona fig talk by', message.author)
