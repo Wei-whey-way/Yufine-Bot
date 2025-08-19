@@ -38,7 +38,7 @@ async function get_id(interaction){
         //Check for custom roles
         if (rows[i].length > 2){
           const role = rows[i].slice(2,4);
-          customRoles.push({name, role});
+          customRoles.push({name, id, role});
         }
     }
 
@@ -51,53 +51,6 @@ async function get_id(interaction){
     return;
   }
 }
-
-// async function get_custom_roles(interaction){
-//   //Read in google sheets
-//   const sheets = google.sheets({version:'v4', auth});
-//   const spreadsheetId = '1GZvD0G-7_uWH-YtKzayMr5kstodDDgatO645l_Df0Y4';
-//   // const range = 'Current Season!A1:AN35';
-//   const range = 'Custom Roles';
-//   customRoles = []
-
-//   try{
-//     const response = await sheets.spreadsheets.values.get({
-//         spreadsheetId, range 
-//     });
-//     const rows = response.data.values;
-//     // console.log(rows)
-
-//     //Get each user's records
-//     var rowsLength = rows.length;
-//     for (var i=2; i < rowsLength; i++){
-//         // console.log(rows[i])
-
-//         //Extract name and records
-//         const name = rows[i][0]
-//         let role = rows[i].slice(1);
-
-//         // console.log('(get_custom_roles) Pushing', name, role)
-//         customRoles.push({name, role})
-//     }
-
-//     // //Save a copy of customroles for removerolls Doesnt work because creating file resets server
-//     // fs.writeFile('./customRoles.json', JSON.stringify(customRoles), err => {
-//     //   if(err){
-//     //     console.error('Failure to save customrole file', err);
-//     //   } else {
-//     //     console.log('File written success!');
-//     //   }
-//     // });
-
-//     return customRoles;
-
-//   } catch (error) {
-//     console.error('Error reading custom roles:', error);
-//     await interaction.editReply('Uhoh Alusha has potato coding.');
-//     return;
-//   }
-// }
-
 
 async function read_gsheets(interaction, member_list, custom_roles, role_id_list){
   //Read in google sheets
@@ -140,12 +93,14 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
       console.error('error', error)
       return;
   }
-  console.log('Readgsheets: Custom roles', custom_roles)
+  // console.log('Readgsheets: Custom roles', custom_roles)
 
   //Role checker
   userRole = {}
   try{
     history.forEach(item =>{
+      // console.log(item)
+      
       if (item.name === undefined){ return; } //Skip if undefined
       if (!(item.name in member_list)){ //Check if user is a current member
         console.log(item.name, "not in member list")
@@ -173,17 +128,15 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
       }
 
       // Append user id and role to the userRole dictionary
-      // console.log(`Name: ${item.name} has role ${role}`);
       userRole[member_list[item.name]] = role;
       // console.log(`Appending ${role} to ${member_list[item.name]}`) //Debugging message
-      
       
     });
 
     // console.log('Debugging userRole: ', userRole)
       
     for (const [userID, role] of Object.entries(userRole)) { //Key is user
-      console.log(userID, role)
+      // console.log(userID, role)
       if (userID === undefined) {
         console.log('ERROR: for loop to communicate with discord has an undefined user')
         continue;
@@ -197,7 +150,7 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
         if (currentRole !== 'None'){continue;}
         const hasRole = targetUser.roles.cache.has(role_id)
         if (hasRole) {
-          console.log(targetUser, '\tHasrole: ', hasRole, old_role)
+          // console.log(targetUser, '\tHasrole: ', hasRole, old_role)
           currentRole = old_role;
         }
       }
@@ -208,16 +161,25 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
       
       let isUniqueRole = false;
       let uniqueRoleId = null;
-      if ((role == "None") || (role == "Glorious Penguin") || (role == "Fallen Shame")) {
-        // console.log("Non unique role")
+      if ((role == "None") || (role == "Glorious Penguin")){ //|| (role == "Fallen Shame")) {
         isUniqueRole = false;
-      } else{
+      } else if (role == "Fallen Shame"){
+        isUniqueRole = false;
+
+        //Find out if user has a custom role
+        if (custom_roles.find(r => r.id === userID)){
+          // console.log(name, 'has a custom role', custom_roles.find(r => r.id === userID).role)
+
+          uniqueRoleId = custom_roles.find(r => r.id === userID).role[1];
+          await targetUser.roles.remove(uniqueRoleId);
+        }
+      } 
+      else{
         let uniqueRole = role
         uniqueRole = custom_roles.find(role => role.role[0] === uniqueRole)
         uniqueRoleId = uniqueRole.role[1];
-        // console.log("Unique role has id", uniqueRoleId)
+        // console.log("\tUnique role has id", uniqueRoleId)
         isUniqueRole = true;
-        
       }
 
       if(currentRole === role){
@@ -235,6 +197,7 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
           //   await targetUser.roles.remove(uniqueRoleId);
           // } 
           await targetUser.roles.remove(role_id_list[currentRole]);
+
           if (isUniqueRole === true) {
             await targetUser.roles.remove(uniqueRoleId);
           } 
@@ -252,11 +215,11 @@ async function read_gsheets(interaction, member_list, custom_roles, role_id_list
           // console.log(`Replaced ${currentRole} with ${role} for ${name}`)
         }
       }
-      console.log()
+      // console.log()
 
     }
 
-    // Send a reply to the user (you can modify this as needed)
+    // Send a reply to the user
     // await interaction.deferReply();
     await interaction.editReply(`Changelog for Igloo Roles:\n${role_messsage.join('\n')}`);
     // await interaction.editReply(`Still debugging`);
