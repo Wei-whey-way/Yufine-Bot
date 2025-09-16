@@ -97,6 +97,11 @@ module.exports = (client) => {
             message.reply({ files: [img] });
         }
 
+        if (message.content.toLocaleLowerCase() === 'i do not understand'){
+            const img = new AttachmentBuilder('img/ars.jpg');
+            message.reply({ files: [img] });
+        }
+
         if (/meta.*(sucks|hate)|((sucks|hate).*)meta/i.test(message.content)) {
             message.reply('Meta this, meta that, have you ever met-a woman before?');
         }
@@ -105,7 +110,7 @@ module.exports = (client) => {
         hasMoona = message.content.toLowerCase().match(/\bmoona\b/)
         hasPreorder = message.content.toLowerCase().match(/\bpreorder\w*\b/)
         hasFig = message.content.toLowerCase().match(/\bfig*\b/)
-        hasSus = message.content.toLowerCase().match(/\b\w*sus\w*\b/)
+        hasSus = message.content.toLowerCase().match(/\b\w*sus\ w*\b/)
 
         if ((hasMoona && hasPreorder) || (hasMoona && hasFig)) {
             console.log('Moona fig talk by', message.author)
