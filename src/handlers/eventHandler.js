@@ -3,6 +3,12 @@ const { AttachmentBuilder, } = require('discord.js');
 const getAllFiles = require('../utils/getAllFiles');
 const { Venom, Alusha } = require('../../memberList.json');
 const { snowballServer, testServer } = require('../../config.json');
+const OpenAI = require("openai");
+
+require('dotenv').config();
+const openai = new OpenAI({
+    apiKey: process.env.GPT_API_KEY
+});
 
 let venomChat = new Array(5).fill("");
 let venomChatIndex = 0;
@@ -15,6 +21,27 @@ function randomTimeout() {
     let durationMs = durationMin * 60 * 1000; // Convert minutes to milliseconds
     
     return durationMs;
+}
+
+// GPT Response
+async function gptResponse(input){
+    input = input.replace(/^yufine[, ]*/i, '').trim(); // Remove "Yufine" from the start of the input
+
+    // const response = `Test response from GPT with input: ${input}`;
+
+    const response = await openai.responses.create({
+        model: "gpt-5-nano",
+        input: input,
+        store: true,
+    });
+
+    console.log('Debugging GPT response:', response, 'input was:', input);
+
+    if (response == null || response.output_text == null || response.output_text == ''){
+        return "Sorry, I couldn't generate a response at this time.";
+    }
+
+    return response.output_text;
 }
 
 // Timeoutvenom
@@ -67,8 +94,7 @@ module.exports = (client) => {
         });
     }
 
-    //Read messages from chat and respond when someone says Hi Yufine
-    client.on('messageCreate', (message) => {
+    client.on('messageCreate', async (message) => {
         // console.log(message);
         if (message.author.bot){
             return; //Stops bot from sending its own message
@@ -79,38 +105,69 @@ module.exports = (client) => {
         const displayName = message.member.nickname || message.author.globalName;
         const channel = message.channel;
 
-        if (message.content.toLocaleLowerCase() === 'hi yufine' || message.content.toLocaleLowerCase() === 'hello yufine'){
-            message.reply('Hello!');
-        }
+        //Default variables
+        let img = null;
 
-        if (message.content.toLocaleLowerCase() === 'bad yufine' || message.content.toLocaleLowerCase() === 'bad bot' || message.content.toLocaleLowerCase() === 'fuck you' || message.content.toLocaleLowerCase() === 'you suck'){
-            const img = new AttachmentBuilder('img/HyufineFinger.png', 'HyufineFinger.png');
-            message.reply({ files: [img] });
-        }
+        // Handlers for simple text responses
+        switch(message.content.toLocaleLowerCase()){
+            case 'hi yufine':
+            case 'hello yufine':
+                message.reply('Hello!');
+                break;
+            
+            case 'good yufine':
+                message.channel.send(`Thank you ${displayName}!`);
+                break;
 
-        if (message.content.toLocaleLowerCase() === 'good yufine' || message.content.toLocaleLowerCase() === 'good bot'){
-            message.channel.send(`Thank you ${displayName}!`);
-        }
+            case 'i do not understand': 
+                img = new AttachmentBuilder('img/ars.jpg');
+                message.channel.send({ files: [img] });
+                break;
+            
+            case 'bad yufine':
+            case 'fuck you':
+            case 'you suck':
+                img = new AttachmentBuilder('img/HyufineFinger.png', 'HyufineFinger.png');
+                message.reply({ files: [img] });
+                break;
+            
+            case 'lord zhxu':
+            case 'lord zxhu':
+                img = new AttachmentBuilder('img/holysac.png', 'holysac.png');
+                message.channel.send({ files: [img] });
+                break;
+            
+            case 'draw':
+                const num = Math.floor(Math.random() * 2) + 1;
+                if (num == 1){
+                    img = new AttachmentBuilder('img/NegaDraw.png', 'NegaDraw.png');
+                    channel.send({ files: [img] });
+                } else if (num == 2){
+                    img = new AttachmentBuilder('img/NegaDraw2.png', 'NegaDraw2.png');
+                    channel.send({ files: [img] });
+                } else {
+                    message.reply('Oops look like Alusha coding skills are poopoo...');
+                }
+                break;
+            
+            case 'pumpkin weakness':
+            case 'arbiter vildred':
+                img = new AttachmentBuilder('img/pumpkinweakness.png', 'pumpkinweakness.png');
+                channel.send({ files: [img] });
+                break;
 
-        if (message.content.toLowerCase().includes('lord zhxu') || message.content.toLowerCase().includes('lord zxhu')){
-            const img = new AttachmentBuilder('img/holysac.png', 'holysac.png');
-            message.reply({ files: [img] });
         }
-
-        if (message.content.toLocaleLowerCase() === 'i do not understand'){
-            const img = new AttachmentBuilder('img/ars.jpg');
-            message.reply({ files: [img] });
-        }
-
+        
+        // Handlers for text responses with unique patterns
         if (/meta.*(sucks|hate)|((sucks|hate).*)meta/i.test(message.content)) {
             message.reply('Meta this, meta that, have you ever met-a woman before?');
         }
-        
-        // const content = message.content.toLowerCase();
-        hasMoona = message.content.toLowerCase().match(/\bmoona\b/)
-        hasPreorder = message.content.toLowerCase().match(/\bpreorder\w*\b/)
-        hasFig = message.content.toLowerCase().match(/\bfig*\b/)
-        hasSus = message.content.toLowerCase().match(/\b\w*sus\ w*\b/)
+
+        // Moona preorder handler
+        let hasMoona = message.content.toLowerCase().match(/\bmoona\b/)
+        let hasPreorder = message.content.toLowerCase().match(/\bpreorder\w*\b/)
+        let hasFig = message.content.toLowerCase().match(/\bfig*\b/)
+        let hasSus = message.content.toLowerCase().match(/\b\w*sus\ w*\b/)
 
         if ((hasMoona && hasPreorder) || (hasMoona && hasFig)) {
             console.log('Moona fig talk by', message.author)
@@ -124,14 +181,11 @@ module.exports = (client) => {
             }
         }
 
-        if (hasSus && message.author.id === Venom){
-            timeoutVenom(client, message);
-            // message.reply("Stop being sussy Alusha, you are not Venom!");
-        }
-
         if (message.author.id === Venom){
             // console.log('Venom message')
             // console.log(message.content);
+
+            if (hasSus){ timeoutVenom(client, message); }
 
             //Check if venom repeated the same text 3 times
             let count = 0
@@ -151,23 +205,11 @@ module.exports = (client) => {
             // console.log('Venom messages:', venomChat);
         }
 
-        if (message.content.toLocaleLowerCase() === 'draw'){
-            const num = Math.floor(Math.random() * 2) + 1;
-            let img;
-            if (num == 1){
-                img = new AttachmentBuilder('img/NegaDraw.png', 'NegaDraw.png');
-                channel.send({ files: [img] });
-            } else if (num == 2){
-                img = new AttachmentBuilder('img/NegaDraw2.png', 'NegaDraw2.png');
-                channel.send({ files: [img] });
-            } else {
-                message.reply('Oops look like Alusha coding skills are poopoo...');
-            }
-        };
-
-        if (message.content.toLowerCase().includes('arbiter vildred') || message.content.toLocaleLowerCase() === 'pumpkin weakness' ){
-            const img = new AttachmentBuilder('img/pumpkinweakness.png', 'pumpkinweakness.png');
-            channel.send({ files: [img] });
-        };
+        // ChatGPT handler
+        if (message.content.toLowerCase().startsWith('yufine,')){
+            const gpt_response = await gptResponse(message.content);
+            message.reply(gpt_response);
+        }
+        
     });
 };
