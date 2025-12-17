@@ -17,3 +17,5 @@ development portal to find out the parameters (e.g. isChatInputCommand())
 
 Packages required
 - Google API (https://www.npmjs.com/package/googleapis)
+- OpenAI (npm install openai)
+- Cron library (npm install node-cron)
